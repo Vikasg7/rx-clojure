@@ -1,4 +1,6 @@
 (ns rx-clojure.operators
+  (:refer-clojure :exclude [cast count delay distinct filter first last
+                            map reduce repeat])
   (:require [rx-clojure.functions :as fns])
   (:import  [io.reactivex.rxjava3.core  Observable
                                         Flowable
@@ -259,8 +261,8 @@
 (defn distinctUntilChanged
   ([instance]
     (.distinctUntilChanged instance))
-  ([
-     f))))
+  ([instance f]
+    (.distinctUntilChanged instance (fns/biPredicate f))))
 
 (defn distinctUntilKeyChanged [instance f]
   (.distinctUntilChanged instance (fns/function f)))
