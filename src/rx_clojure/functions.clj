@@ -52,16 +52,20 @@
   `(reify BooleanSupplier (getAsBoolean [_#] (true? (~f)))))
 
 (defmacro onSubscribe [klass f]
-  (let [method    `(subscribe [_# e#]
-                     (let [cancel# (~f e#)]
-                     (when (ifn? cancel#)
-                       (.setCancellable e# (cancellable cancel#)))))
+  (let [method `(subscribe [_# e#] (let [cancel# (~f e#)]
+                                   (when (ifn? cancel#)
+                                     (.setCancellable e# (cancellable cancel#)))))
         interface `~(symbol (str "io.reactivex.rxjava3.core." klass "OnSubscribe"))]
   `(reify ~interface ~method)))
 
 (defmacro source [klass f]
   (let [method    `(subscribe [_# e#] (~f e#))
         interface `~(symbol (str "io.reactivex.rxjava3.core." klass "Source"))]
+  `(reify ~interface ~method)))
+
+(defmacro transformer [klass f]
+  (let [method    `(apply [_# e#] (~f e#))
+        interface `~(symbol (str "io.reactivex.rxjava3.core." klass "Transformer"))]
   `(reify ~interface ~method)))
 
 (defmacro publisher [f]

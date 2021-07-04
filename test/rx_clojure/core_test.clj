@@ -1,7 +1,7 @@
 (ns rx-clojure.core-test
   (:use clojure.test)
   (:require [rx-clojure.static :as rx]
-            [rx-clojure.operators :as rxop]
+            [rx-clojure.operators :as op]
             [rx-clojure.functions :as fns])
   (:import  [io.reactivex.rxjava3.core Observable Flowable]))
 
@@ -11,23 +11,24 @@
 
 (set! *warn-on-reflection* true)
 
-(def a (Observable/fromIterable [1 2 3]))
-(def b (Observable/fromIterable [4 5 6]))
+(def ^Observable a (Observable/fromIterable [1 2 3]))
+(def ^Observable b (Observable/fromIterable [4 5 6]))
 
-(-> Observable
-    (rx/zip [a b] vec)
-    (rxop/subscribe println))
+(-> a
+    (op/compose #(-> ^Observable % 
+                     (op/concatWith b)))
+    (op/subscribe println))
 
 ;; ;; (macroexpand-1 `(-> Observable
 ;; ;;     (rx/combineLatest [a b] vec 3)
-;; ;;     (rxop/subscribe println)))
+;; ;;     (op/subscribe println)))
 
 ;; (-> Observable
 ;;     (rx/concat (Observable/just a b) 5)
-;;     (rxop/subscribe println))
+;;     (op/subscribe println))
 
 ;; (-> (Observable/combineLatest [a b] (fns/function [x] (vec x)) 5)
-;;     (rxop/subscribe println))
+;;     (op/subscribe println))
 
 ;; (defn ^Observable test-obs []
 ;;   (-> Observable (rx/create (fn [^ObservableEmitter e]
@@ -40,10 +41,10 @@
 
 ;; (-> Observable (rx/just 1 2 3 4 5 6)
 ;;     (.filter (fns/predicate even?))
-;;     (rxop/subscribe println))
+;;     (op/subscribe println))
 
 ;; (-> Observable (rx/error (Error. "Hello"))
-;;     (rxop/subscribe println println))
+;;     (op/subscribe println println))
 
 ;; (-> Observable (rx/wrap (fn [e] ())))
 

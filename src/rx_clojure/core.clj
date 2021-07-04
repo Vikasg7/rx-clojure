@@ -1,7 +1,6 @@
 (ns rx-clojure.core
   (:require [rx-clojure.static :as rx]
-            [rx-clojure.operators :as rxop]
-            [rx-clojure.functions :as fns])
+            [rx-clojure.operators :as op])
   (:import  [io.reactivex.rxjava3.core  CompletableConverter
                                         CompletableEmitter
                                         CompletableObserver
