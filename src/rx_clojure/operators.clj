@@ -1,20 +1,13 @@
 (ns rx-clojure.operators
   (:refer-clojure :exclude [cast count delay distinct filter first last
-                            map reduce repeat])
-  (:require [rx-clojure.functions :as fns])
+                            map reduce repeat take test])
+  (:require [rx-clojure.functions :as fns]
+            [rx-clojure.utils :refer [args-count]])
   (:import  [io.reactivex.rxjava3.core  Observable
                                         Flowable
                                         Single
                                         Maybe
                                         Completable]))
-
-(defn subscribe 
-  ([instance f]
-    (.subscribe instance (fns/consumer f)))
-  ([instance f e]
-    (.subscribe instance (fns/consumer f) (fns/consumer e)))
-  ([instance f e c]
-    (.subscribe instance (fns/consumer f) (fns/consumer e) (fns/action c))))
 
 (defn all [instance f]
   (.all instance (fns/predicate f)))
@@ -80,7 +73,7 @@
   ([instance f e c]
     (.blockingSubscribe instance (fns/consumer f) (fns/consumer e) (fns/action c))))
 
-(defn bufferByCount
+(defn buffer
   ([instance count]
     (.buffer instance count))
   ([instance count skip]
@@ -95,8 +88,8 @@
 (defn bufferByTime
   ([instance timespan unit]
     (.buffer instance timespan unit))
-  ([instance timespan unit countOrScheduler]
-    (.buffer instance timespan unit countOrScheduler))
+  ([instance timespan unit count]
+    (.buffer instance timespan unit count))
   ([instance timespan unit scheduler count]
     (.buffer instance timespan unit scheduler count)))
 
@@ -106,7 +99,7 @@
   ([instance timespan timeskip unit scheduler]
     (.buffer instance timespan timeskip unit scheduler)))
 
-(defn bufferToggle [instance opening closing]
+(defn bufferByToggle [instance opening closing]
   (.buffer instance opening closing))
 
 (defn cache 
@@ -133,7 +126,7 @@
         (instance? Single      instance) (.compose instance (fns/transformer "Single"      f))
         (instance? Maybe       instance) (.compose instance (fns/transformer "Maybe"       f))
         (instance? Completable instance) (.compose instance (fns/transformer "Completable" f))
-        :else                            (throw (Error. ".compose not implemented."))))
+        :else                            (throw (Error. "op/compose not implemented."))))
 
 (defn concatMap
   ([instance f]
@@ -294,6 +287,9 @@
 (defn doOnNext [instance f]
   (.doOnNext instance (fns/consumer f)))
 
+(defn doOnRequest [instance f]
+  (.doOnRequest instance (fns/longConsumer f)))
+
 (defn doOnSubscribe [instance f]
   (.doOnSubscribe instance (fns/consumer f)))
 
@@ -312,11 +308,11 @@
 (defn filter [instance f]
   (.filter instance (fns/predicate f)))
 
-(defn first
-  ([instance]
-    (.firstElement instance))
-  ([instance defaultItem]
-    (.first defaultItem)))
+(defn first [instance defaultItem]
+  (.first instance defaultItem))
+
+(defn firstElement [instance]
+  (.firstElement instance))
 
 (defn firstOrError [instance]
   (.firstOrError instance))
@@ -395,11 +391,11 @@
 (defn join [instance other f g h]
   (.join instance other (fns/function f) (fns/function g) (fns/biFunction h)))
 
-(defn last
-  ([instance]
-    (.lastElement instance))
-  ([instance defaultItem]
-    (.last defaultItem)))
+(defn last [instance defaultItem]
+  (.last instance defaultItem))
+
+(defn lastElement [instance]
+  (.lastElement instance))
 
 (defn lastOrError [instance]
   (.lastOrError instance))
@@ -427,6 +423,36 @@
 (defn ofType [instance clazz]
   (.ofType instance clazz))
 
+
+(defn onBackpressureBuffer
+  ([instance]
+    (.onBackpressureBuffer instance))
+  ([instance delayError]
+    (.onBackpressureBuffer instance delayError))
+  ([instance capacity f]
+    (cond (ifn? f) (.onBackpressureBuffer instance capacity (fns/action f))
+          :else    (.onBackpressureBuffer instance capacity f)))
+  ([instance capacity f g]
+    (cond (ifn? f) (.onBackpressureBuffer instance capacity (fns/action f) g)
+          :else    (.onBackpressureBuffer instance capacity f g)))
+  ([instance capacity delayError unbounded f]
+    (.onBackpressureBuffer instance capacity delayError unbounded (fns/action f))))
+
+(defn onBackpressureDrop
+  ([instance]
+    (.onBackpressureDrop instance))
+  ([instance f]
+    (.onBackpressureDrop instance (fns/function f))))
+
+(defn onBackpressureLatest [instance]
+  (.onBackpressureLatest instance))
+
+(defn onBackpressureReduce
+  ([instance f]
+    (.onBackpressureReduce instance (fns/biFunction f)))
+  ([instance s f]
+    (.onBackpressureReduce instance (fns/supplier s) (fns/function f))))
+
 (defn onErrorComplete
   ([instance]
     (.onErrorComplete instance))
@@ -448,11 +474,21 @@
 (defn onTerminateDetach [instance]
   (.onTerminateDetach instance))
 
+(defn parallel
+  ([instance]
+    (.parallel instance))
+  ([instance parallelism]
+    (.parallel instance parallelism))
+  ([instance parallelism prefetch]
+    (.parallel instance parallelism prefetch)))
+
 (defn publish 
   ([instance]
     (.publish instance))
   ([instance f]
-    (.publish instance (fns/function f))))
+    (.publish instance (fns/function f)))
+  ([instance f prefetch]
+    (.publish instance (fns/function f) prefetch)))
 
 (defn reduce 
   ([instance f]
@@ -497,3 +533,338 @@
   ([instance time unit scheduler eagerTruncate]
     (.replay instance time unit scheduler eagerTruncate)))
 
+(defn retry
+  ([instance]
+    (.retry instance))
+  ([instance f]
+    (cond (ifn? f) (case (args-count f)
+                      1 (.retry instance (fns/predicate f))
+                      2 (.retry instance (fns/biPredicate f))
+                        (throw (Error. "op/retry: Wrong no. of parameters for a predicate")))
+          :else    (.retry instance f)))
+  ([instance times f]
+    (.retry instance times (fns/predicate f))))
+
+(defn retryUntil [instance f]
+  (.retryUntil instance (fns/booleanSupplier f)))
+
+(defn retryWhen [instance f]
+  (.retryWhen instance (fns/function f)))
+
+(defn sample
+  ([instance time unit]
+    (.sample instance time unit))
+  ([instance time unit scheduler]
+    (.sample instance time unit scheduler))
+  ([instance time unit scheduler emitLast]
+    (.sample instance time unit scheduler emitLast)))
+
+(defn scan 
+  ([instance f]
+    (.scan instance (fns/biFunction f)))
+  ([instance seed f]
+    (.scan instance seed (fns/biFunction f))))
+
+(defn scanWith [instance f g]
+  (.scanWith instance (fns/supplier f) (fns/biFunction g)))
+
+(defn serialize [instance]
+  (.serialize instance))
+
+(defn single [instance defaultItem]
+  (.single instance defaultItem))
+
+(defn singleElement [instance]
+  (.singleElement instance))
+
+(defn singleOrError [instance]
+  (.singleOrError instance))
+
+(defn skip
+  ([instance count]
+    (.skip instance count))
+  ([instance time unit]
+    (.skip instance time unit))
+  ([instance time unit scheduler]
+    (.skip instance time unit scheduler)))
+
+(defn skipLast
+  ([instance count]
+    (.skipLast instance count))
+  ([instance time unit]
+    (.skipLast instance time unit))
+  ([instance time unit scheduler]
+    (.skipLast instance time unit scheduler))
+  ([instance time unit scheduler delayError]
+    (.skipLast instance time unit scheduler delayError))
+  ([instance time unit scheduler delayError bufferSize]
+    (.skipLast instance time unit scheduler delayError bufferSize)))
+
+(defn skipUntil [instance src]
+  (.skipUntil instance src))
+
+(defn skipWhile [instance f]
+  (.skipWhile instance (fns/predicate f)))
+
+(defn sorted
+  ([instance]
+    (.sorted instance))
+  ([instance f]
+    (.sorted instance (comparator f))))
+
+(defn startWith [instance src]
+  (.startWith instance src))
+
+(defn startWithArray [instance arr]
+  (.startWithArray instance arr))
+
+(defn startWithItem [instance item]
+  (.startWithItem instance item))
+
+(defn startWithIterable [instance iterable]
+  (.startWithIterable instance iterable))
+
+(defn subscribe
+  ([instance]
+    (.subscribe instance))
+  ([instance f]
+    (.subscribe instance (fns/consumer f)))
+  ([instance f e]
+    (.subscribe instance (fns/consumer f) (fns/consumer e)))
+  ([instance f e c]
+    (.subscribe instance (fns/consumer f) (fns/consumer e) (fns/action c))))
+
+(defn subscribeOn [instance scheduler]
+  (.subscribeOn instance scheduler))
+
+(defn switchIfEmpty [instance src]
+  (.switchIfEmpty instance src))
+
+(defn switchMap
+  ([instance f]
+    (.switchMap instance (fns/function f)))
+  ([instance f bufferSize]
+    (.switchMap instance (fns/function f) bufferSize)))
+
+(defn switchMapCompletable [instance f]
+  (.switchMapCompletable instance (fns/function f)))
+
+(defn switchMapCompletableDelayError [instance f]
+  (.switchMapCompletableDelayError instance (fns/function f)))
+
+(defn switchMapDelayError
+  ([instance f]
+    (.switchMapDelayError instance (fns/function f)))
+  ([instance f bufferSize]
+    (.switchMapDelayError instance (fns/function f) bufferSize)))
+
+(defn switchMapMaybe [instance f]
+  (.switchMapMaybe instance (fns/function f)))
+
+(defn switchMapMaybeDelayError [instance f]
+  (.switchMapMaybeDelayError instance (fns/function f)))
+
+(defn switchMapSingle [instance f]
+  (.switchMapSingle instance (fns/function f)))
+
+(defn switchMapSingleDelayError [instance f]
+  (.switchMapSingleDelayError instance (fns/function f)))
+
+(defn take
+  ([instance count]
+    (.take instance count))
+  ([instance time unit]
+    (.take instance time unit))
+  ([instance time unit scheduler]
+    (.take instance time unit scheduler)))
+
+(defn takeLast
+  ([instance count]
+    (.takeLast instance count))
+  ([instance count time unit]
+    (.takeLast instance count time unit))
+  ([instance count time unit scheduler delayError bufferSize]
+    (.takeLast instance count time unit scheduler delayError bufferSize)))
+
+(defn takeLastByTime
+  ([instance time unit]
+    (.takeLast instance time unit))
+  ([instance time unit delayError]
+    (.takeLast instance time unit delayError))
+  ([instance time unit scheduler delayError]
+    (.takeLast instance time unit scheduler delayError))
+  ([instance time unit scheduler delayError bufferSize]
+    (.takeLast instance time unit scheduler delayError bufferSize)))
+
+(defn takeUntil [instance f]
+  (cond (ifn? f) (.takeUntil instance (fns/predicate f))
+        :else    (.takeUntil instance f)))
+
+(defn takeWhile [instance f]
+  (.takeWhile instance (fns/predicate f)))
+
+(defn test
+  ([instance]
+    (.test instance))
+  ([instance dispose]
+    (.test instance dispose)))
+
+(defn throttleFirst
+  ([instance time unit]
+    (.throttleFirst instance time unit))
+  ([instance time unit scheduler]
+    (.throttleFirst instance time unit scheduler)))
+
+(defn throttleLast
+  ([instance time unit]
+    (.throttleLast instance time unit))
+  ([instance time unit scheduler]
+    (.throttleLast instance time unit scheduler)))
+
+(defn throttleLastest
+  ([instance timeout unit]
+    (.throttleLastest instance timeout unit))
+  ([instance timeout unit scheduler]
+    (.throttleLastest instance timeout unit scheduler))
+  ([instance timeout unit scheduler emitLast]
+    (.throttleLastest instance timeout unit scheduler emitLast)))
+
+(defn throttleTimeout
+  ([instance time unit]
+    (.throttleTimeout instance time unit))
+  ([instance time unit scheduler]
+    (.throttleTimeout instance time unit scheduler)))
+
+(defn timeInterval
+  ([instance]
+    (.timeInterval instance))
+  ([instance unit]
+    (.timeInterval instance unit))
+  ([instance unit scheduler]
+    (.timeInterval instance unit scheduler)))
+
+(defn timeout
+  ([instance timeout unit]
+    (.timeout instance timeout unit))
+  ([instance timeout unit scheduler]
+    (.timeout instance timeout unit scheduler))
+  ([instance timeout unit scheduler fallback]
+    (.timeout instance timeout unit scheduler fallback)))
+
+(defn timeoutByIndicator
+  ([instance f]
+    (.timeout instance (fns/function f)))
+  ([instance f g]
+    (cond (ifn? g) (.timeout instance (fns/function f) (fns/function g))
+          :else    (.timeout instance (fns/function f) g)))
+  ([instance f g fallback]
+    (.timeout instance (fns/function f) (fns/function g) fallback)))
+
+(defn timestamp
+  ([instance]
+    (.timestamp instance))
+  ([instance unit]
+    (.timestamp instance unit))
+  ([instance unit scheduler]
+    (.timestamp instance unit scheduler)))
+
+(defn toFlowable [instance backPressureStrategy]
+  (.toFlowable instance backPressureStrategy))
+
+(defn fromObservable [instance backPressureStrategy]
+  (.fromObservable instance backPressureStrategy))
+
+(defn toObservable [instance]
+  (.toObservable instance))
+
+(defn toFuture [instance]
+  (.toFuture instance))
+
+(defn toList
+  ([instance]
+    (.toList instance))
+  ([instance capacityHint]
+    (.toList instance capacityHint)))
+
+(defn toMap
+  ([instance f]
+    (.toMap instance (fns/function f)))
+  ([instance f g]
+    (.toMap instance (fns/function f) (fns/function g))))
+
+(defn toMultiMap
+  ([instance f]
+    (.toMultiMap instance (fns/function f)))
+  ([instance f g]
+    (.toMultiMap instance (fns/function f) (fns/function g))))
+
+(defn toSortedList
+  ([instance]
+    (.toSortedList instance))
+  ([instance f]
+    (cond (ifn? f) (.toSortedList instance (comparator f))
+          :else    (.toSortedList instance f)))
+  ([instance f capacityHint]
+    (.toSortedList instance (comparator f) capacityHint)))
+
+(defn unsubscribeOn [instance scheduler]
+  (.unsubscribeOn instance scheduler))
+
+(defn window
+  ([instance count]
+    (.window instance count))
+  ([instance count skip]
+    (.window instance count skip))
+  ([instance count skip bufferSize]
+    (.window instance count skip bufferSize)))
+
+(defn windowByBoundary
+  ([instance boundaryIndicator]
+    (.window instance boundaryIndicator))
+  ([instance boundaryIndicator bufferSize]
+    (.window instance boundaryIndicator bufferSize)))
+
+(defn windowByTime
+  ([instance timespan unit]
+    (.window instance timespan unit))
+  ([instance timespan unit count]
+    (.window instance timespan unit count))
+  ([instance timespan unit scheduler count]
+    (.window instance timespan unit scheduler count))
+  ([instance timespan unit scheduler count restart]
+    (.window instance timespan unit scheduler count restart))
+  ([instance timespan unit scheduler count restart bufferSize]
+    (.window instance timespan unit scheduler count restart bufferSize)))
+
+(defn windowByTimeWithSkip
+  ([instance timespan timeskip unit]
+    (.window instance timespan timeskip unit))
+  ([instance timespan timeskip unit scheduler]
+    (.window instance timespan timeskip unit scheduler))
+  ([instance timespan timeskip unit scheduler bufferSize]
+    (.window instance timespan timeskip unit scheduler bufferSize)))
+
+(defn windowByToggle 
+  ([instance opening closing]
+    (.window instance opening closing))
+  ([instance opening closing bufferSize]
+    (.window instance opening closing bufferSize)))
+
+(defn withLatestFrom 
+  ([instance src f]
+    (cond (sequential? src) (.withLatestFrom instance src (fns/function f))
+          :else             (.withLatestFrom instance src (fns/biFunction f))))
+  ([instance src1 src2 f]
+    (.withLatestFrom instance src1 src2 (fns/function f)))
+  ([instance src1 src2 src3 f]
+    (.withLatestFrom instance src1 src2 src3 (fns/function f)))
+  ([instance src1 src2 src3 src4 f]
+    (.withLatestFrom instance src1 src2 src3 src4 (fns/function f))))
+
+(defn zipWith
+  ([instance src f]
+    (.zipWith instance src (fns/biFunction f)))
+  ([instance src f delayError]
+    (.zipWith instance src (fns/biFunction f) delayError))
+  ([instance src f delayError bufferSize]
+    (.zipWith instance src (fns/biFunction f) delayError bufferSize)))

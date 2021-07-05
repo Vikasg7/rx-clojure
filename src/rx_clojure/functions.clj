@@ -8,7 +8,8 @@
                                             BiPredicate
                                             Supplier
                                             Cancellable
-                                            BooleanSupplier]
+                                            BooleanSupplier
+                                            LongConsumer]
             [io.reactivex.rxjava3.core  CompletableSource
                                         MaybeSource
                                         ObservableSource
@@ -52,9 +53,9 @@
   `(reify BooleanSupplier (getAsBoolean [_#] (true? (~f)))))
 
 (defmacro onSubscribe [klass f]
-  (let [method `(subscribe [_# e#] (let [cancel# (~f e#)]
-                                   (when (ifn? cancel#)
-                                     (.setCancellable e# (cancellable cancel#)))))
+  (let [method `(subscribe [_# e#] 
+                  (let [cancel# (~f e#)]
+                  (when (ifn? cancel#) (.setCancellable e# (cancellable cancel#)))))
         interface `~(symbol (str "io.reactivex.rxjava3.core." klass "OnSubscribe"))]
   `(reify ~interface ~method)))
 
@@ -70,3 +71,6 @@
 
 (defmacro publisher [f]
   `(reify Publisher (subscribe [_# s#] (~f s#))))
+
+(defmacro longConsumer [f]
+  `(reify LongConsumer (accept [_# a#] (~f a#))))
