@@ -5,10 +5,14 @@ RxJava bindings for Clojure.
 [Documentation](http://reactivex.io/RxJava/3.x/javadoc/)
 
 ## Notable differences from RxJava
-* `buffer` operator has been divided into `buffer`, `bufferByBoundary`, `bufferByTime`, `bufferByTimeWithSkip`, `bufferByToggle`.
-* `window` operator has been divided into `window`, `windowByBoundary`, `windowByTime`, `windowByTimeWithSkip`, `windowByToggle`.
-* `cacheWithInitialCapacity` operator is `cache(initialCapacity)` 
+* Following operators are broken due to extensive method overloading.  
+
+  | Original                   | Broken into                                                                          |
+  |----------------------------|--------------------------------------------------------------------------------------|
+  |`buffer`                    |`buffer`, `bufferByBoundary`, `bufferByTime`, `bufferByTimeWithSkip`, `bufferByToggle`|
+  |`window`                    |`window`, `windowByBoundary`, `windowByTime`, `windowByTimeWithSkip`, `windowByToggle`|
+  |`cacheWithInitialCapacity`  |`cache(initialCapacity)`                                                              | 
+  |`replay`                    |`replay`, `replayWithBuffer`                                                          |
+  |`takeLast`                  |`takeLast`, `takeLastByTime`                                                          |
+  |`timeout`                   |`timeout`, `timeoutByIndicator`                                                       |  
 * Added `distinctUntilKeyChanged(keySelectorFunction)` operator
-* `replay` operator is divided into `replay` and `replayWithBuffer`
-* `takeLast` is divided into `takeLast` and `takeLastByTime`
-* `timeout` is divided into `timeout` and `timeoutByIndicator`
