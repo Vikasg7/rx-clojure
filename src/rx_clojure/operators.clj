@@ -551,6 +551,12 @@
 (defn retryWhen [instance f]
   (.retryWhen instance (fns/function f)))
 
+(defn runOn 
+  ([instance scheduler]
+    (.runOn instance scheduler))
+  ([instance scheduler prefetch]
+    (.runOn instance scheduler prefetch)))
+
 (defn sample
   ([instance time unit]
     (.sample instance time unit))
