@@ -1,6 +1,6 @@
 (ns rx-clojure.core-test
   (:use clojure.test)
-  (:require [rx-clojure.static :as rx]
+  (:require [rx-clojure.statics :as rx]
             [rx-clojure.operators :as op]
             [rx-clojure.functions :as fns])
   (:import  [io.reactivex.rxjava3.core Observable Flowable]))

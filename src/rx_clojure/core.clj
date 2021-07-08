@@ -1,5 +1,5 @@
 (ns rx-clojure.core
-  (:require [rx-clojure.static :as rx]
+  (:require [rx-clojure.statics :as rx]
             [rx-clojure.operators :as op])
   (:import  [io.reactivex.rxjava3.core  CompletableConverter
                                         CompletableEmitter

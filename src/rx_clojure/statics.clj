@@ -1,4 +1,4 @@
-(ns rx-clojure.static
+(ns rx-clojure.statics
   (:refer-clojure :exclude [concat empty merge range])
   (:require [rx-clojure.functions :as fns]))
 
