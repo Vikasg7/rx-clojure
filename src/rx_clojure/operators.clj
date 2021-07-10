@@ -577,6 +577,9 @@
 (defn serialize [instance]
   (.serialize instance))
 
+(defn share [instance]
+  (.share instance))
+
 (defn single [instance defaultItem]
   (.single instance defaultItem))
 
