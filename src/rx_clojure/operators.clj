@@ -780,9 +780,6 @@
 (defn toFlowable [instance backPressureStrategy]
   (.toFlowable instance backPressureStrategy))
 
-(defn fromObservable [instance backPressureStrategy]
-  (.fromObservable instance backPressureStrategy))
-
 (defn toObservable [instance]
   (.toObservable instance))
 

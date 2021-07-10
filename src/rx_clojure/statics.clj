@@ -72,16 +72,24 @@
   `(. ~klass fromCallable (fns/callable ~f)))
 
 (defmacro fromCompletable [klass f]
-  `(. ~klass fromCompletable (fns/source ~'Completable ~f)))
+  (cond (ifn? (eval f)) `(. ~klass fromCompletable (fns/source "Completable" ~f))
+        :else           `(. ~klass fromCompletable ~f)))
 
 (defmacro fromSingle [klass f]
-  `(. ~klass fromSingle (fns/source ~'Single ~f)))
+  (cond (ifn? (eval f)) `(. ~klass fromSingle (fns/source "Single" ~f))
+        :else           `(. ~klass fromSingle ~f)))
 
-(defmacro fromObservable [klass f]
-  `(. ~klass fromObservable (fns/source ~'Observable ~f)))
+(defmacro fromObservable 
+  ([klass f]
+    (cond (ifn? (eval f)) `(. ~klass fromObservable (fns/source "Observable" ~f))
+          :else           `(. ~klass fromObservable ~f)))
+  ([klass f backPressureStrategy]
+    (cond (ifn? (eval f)) `(. ~klass fromObservable (fns/source "Observable" ~f) ~backPressureStrategy)
+          :else           `(. ~klass fromObservable ~f ~backPressureStrategy))))
 
 (defmacro fromMaybe [klass f]
-  `(. ~klass fromMaybe (fns/source ~'Maybe ~f)))
+  (cond (ifn? (eval f)) `(. ~klass fromMaybe (fns/source "Maybe" ~f))
+        :else           `(. ~klass fromMaybe ~f)))
 
 (defmacro fromOptional [klass optional]
   `(. ~klass fromOptional ~optional))
@@ -96,7 +104,8 @@
   `(. ~klass fromIterable ~iterable))
 
 (defmacro fromPublisher [klass f]
-  `(. ~klass fromPublisher (fns/publisher ~f)))
+  (cond (ifn? (eval f)) `(. ~klass fromPublisher (fns/publisher ~f))
+        :else           `(. ~klass fromPublisher ~f)))
 
 (defmacro fromRunnable [klass f]
   `(. ~klass fromRunnable (fns/runnable ~f)))
