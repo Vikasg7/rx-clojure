@@ -42,8 +42,8 @@
   ([instance val]
     (.blockingLast instance val)))
 
-(defn blockingLast [instance]
-  (.blockingLast instance))
+(defn blockingLatest [instance]
+  (.blockingLatest instance))
 
 (defn blockingMostRecent [instance initialItem]
   (.blockingMostRecent instance initialItem))
