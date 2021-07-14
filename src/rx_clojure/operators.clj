@@ -615,6 +615,18 @@
 (defn skipWhile [instance f]
   (.skipWhile instance (fns/predicate f)))
 
+(defn sequential 
+  ([instance]
+    (.sequential instance))
+  ([instance prefetch]
+    (.sequential instance prefetch)))
+
+(defn sequentialDelayError
+  ([instance]
+    (.sequentialDelayError instance))
+  ([instance prefetch]
+    (.sequentialDelayError instance prefetch)))
+
 (defn sorted
   ([instance]
     (.sorted instance))
