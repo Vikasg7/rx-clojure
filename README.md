@@ -1,5 +1,10 @@
 # rx-clojure
-RxJava bindings for Clojure.
+RxJava bindings for Clojure.  
+
+## Installation
+```console
+[org.clojars.vikasg7/rx-clojure "0.1.0-SNAPSHOT"]
+```
 
 ## Usage
 [Documentation](http://reactivex.io/RxJava/3.x/javadoc/)
