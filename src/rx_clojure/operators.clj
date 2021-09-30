@@ -742,13 +742,13 @@
   ([instance time unit scheduler]
     (.throttleLast instance time unit scheduler)))
 
-(defn throttleLastest
+(defn throttleLatest
   ([instance timeout unit]
-    (.throttleLastest instance timeout unit))
+    (.throttleLatest instance timeout unit))
   ([instance timeout unit scheduler]
-    (.throttleLastest instance timeout unit scheduler))
+    (.throttleLatest instance timeout unit scheduler))
   ([instance timeout unit scheduler emitLast]
-    (.throttleLastest instance timeout unit scheduler emitLast)))
+    (.throttleLatest instance timeout unit scheduler emitLast)))
 
 (defn throttleTimeout
   ([instance time unit]
