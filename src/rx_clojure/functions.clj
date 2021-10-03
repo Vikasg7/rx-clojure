@@ -16,6 +16,9 @@
                                         SingleSource]
             [org.reactivestreams  Publisher]))
 
+(defn- truthy? [x]
+  (if x true false))
+
 (defmacro callable [f]
   `(reify Callable (call [_#] (~f))))
 
@@ -32,7 +35,7 @@
   `(reify Action (run [_#] (~f))))
 
 (defmacro predicate [f]
-  `(reify Predicate (test [_# a#] (true? (~f a#)))))
+  `(reify Predicate (test [_# a#] (truthy? (~f a#)))))
 
 (defmacro biConsumer [f]
   `(reify BiConsumer (accept [_# a# b#] (~f a# b#))))
@@ -41,7 +44,7 @@
   `(reify BiFunction (apply [_# a# b#] (~f a# b#))))
 
 (defmacro biPredicate [f]
-  `(reify BiPredicate (test [_# a# b#] (true? (~f a# b#)))))
+  `(reify BiPredicate (test [_# a# b#] (truthy? (~f a# b#)))))
 
 (defmacro supplier [f]
   `(reify Supplier (get [_#] (~f))))
@@ -50,7 +53,7 @@
   `(reify Cancellable (cancel [_#] (~f))))
 
 (defmacro booleanSupplier [f]
-  `(reify BooleanSupplier (getAsBoolean [_#] (true? (~f)))))
+  `(reify BooleanSupplier (getAsBoolean [_#] (truthy? (~f)))))
 
 (defmacro onSubscribe [klass f]
   (let [method `(subscribe [_# e#] 
