@@ -1,4 +1,4 @@
-(defproject org.clojars.vikasg7/rx-clojure "0.1.2-SNAPSHOT"
+(defproject org.clojars.vikasg7/rx-clojure "0.1.3-SNAPSHOT"
   :description "RxJava bindings for clojure"
   :url "https://github.com/Vikasg7/rx-clojure"
   :license {:name "Eclipse Public License"

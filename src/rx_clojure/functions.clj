@@ -16,7 +16,7 @@
                                         SingleSource]
             [org.reactivestreams  Publisher]))
 
-(defn- truthy? [x]
+(defn truthy? [x]
   (if x true false))
 
 (defmacro callable [f]
