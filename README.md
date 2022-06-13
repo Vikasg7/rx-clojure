@@ -3,7 +3,7 @@ RxJava bindings for Clojure.
 
 ## Installation
 ```console
-[org.clojars.vikasg7/rx-clojure "0.1.3-SNAPSHOT"]
+[org.clojars.vikasg7/rx-clojure "0.1.4-SNAPSHOT"]
 ```
 
 ## Usage

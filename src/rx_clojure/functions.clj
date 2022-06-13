@@ -14,6 +14,7 @@
                                         MaybeSource
                                         ObservableSource
                                         SingleSource]
+            [io.reactivex.rxjava3.disposables Disposable]
             [org.reactivestreams  Publisher]))
 
 (defn truthy? [x]
@@ -56,9 +57,10 @@
   `(reify BooleanSupplier (getAsBoolean [_#] (truthy? (~f)))))
 
 (defmacro onSubscribe [klass f]
-  (let [method `(subscribe [_# e#] 
+  (let [method `(subscribe [_# e#]
                   (let [cancel# (~f e#)]
-                  (when (ifn? cancel#) (.setCancellable e# (cancellable cancel#)))))
+                  (cond (instance? Disposable cancel#) (.setDisposable e# cancel#)
+                        (ifn? cancel#)                 (.setCancellable e# (cancellable cancel#)))))
         interface `~(symbol (str "io.reactivex.rxjava3.core." klass "OnSubscribe"))]
   `(reify ~interface ~method)))
 
