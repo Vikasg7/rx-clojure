@@ -9,6 +9,9 @@ RxJava bindings for Clojure.
 ## Usage
 [Documentation](http://reactivex.io/RxJava/3.x/javadoc/)
 
+## Examples
+* [clj-snake](https://github.com/Vikasg7/clj-snake/)
+
 ## Notable differences from RxJava
 * Following operators are broken due to extensive method overloading.  
 
